@@ -113,17 +113,13 @@ A comprehensive machine learning system for detecting neonatal jaundice through 
     <td><b>🥇 LAB</b></td>
     <td>KNN</td>
     <td>k=3</td>
-    <td><b>96.21%</b></td>
-    <td>94.86%</td>
-    <td>94.14%</td>
-    <td>95.00%</td>
+<td><b>95.36%</b></td>      <td>96.49%</td>      <td>94.14%</td>    <td>95.30%</td>
   </tr>
   <tr>
     <td><b>🥈 HSV</b></td>
     <td>KNN</td>
     <td>k=3</td>
-    <td><b>95.79%</b></td>
-    <td>95.34%</td>
+<td><b>94.43%</b></td>      <td>95.33%</td>      <td>91.00%</td>    <td>95.34%</td>
     <td>93.43%</td>
     <td>94.37%</td>
   </tr>
@@ -131,8 +127,7 @@ A comprehensive machine learning system for detecting neonatal jaundice through 
     <td><b>🥉 YCbCr</b></td>
     <td>KNN</td>
     <td>k=3</td>
-    <td><b>95.57%</b></td>
-    <td>95.80%</td>
+<td><b>95.14%</b></td>    <td>95.80%</td>
     <td>94.43%</td>
     <td>95.11%</td>
   </tr>
@@ -140,9 +135,8 @@ A comprehensive machine learning system for detecting neonatal jaundice through 
     <td>RGB</td>
     <td>KNN</td>
     <td>k=3</td>
-    <td>95.07%</td>
-    <td>95.98%</td>
-    <td>92.14%</td>
+<td><b>94.14%</b></td>    <td>95.98%</td>
+  95.21%  <td>92.14%</td>
     <td>94.02%</td>
   </tr>
 </tbody>
@@ -152,7 +146,7 @@ A comprehensive machine learning system for detecting neonatal jaundice through 
 
 | Model | Accuracy | Training Time | Strengths |
 |-------|----------|--------------|----------|
-| **KNN (k=3)** | **96.21%** ⭐ | Fast | Simple, interpretable |
+| **KNN (k=3)** | **95.36%*** ⭐ | Fast | Simple, interpretable |
 | Random Forest | 92.93% | Medium | Robust to overfitting |
 | XGBoost | 91.29% | Medium | Good generalization |
 | SVM | 83.57% | Slow | Works with high dimensions |
