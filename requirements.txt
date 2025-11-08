@@ -28,7 +28,3 @@ torch>=2.0.0
 torchvision>=0.15.0
 
 # Google Colab specific (optional for local environment)
-# google-colab
-
-# Additional utilities
-random2>=1.0.1
