@@ -304,7 +304,7 @@ Tested KNN stability across different K values:
 ### Prerequisites
 ```bash
 Python 3.8+
-Jupyter Notebook
+Google Colab
 GPU (optional, for deep learning models)
 ```
 
@@ -321,10 +321,9 @@ cd JAUNDICE_PREDICTOR
 pip install -r requirements.txt
 ```
 
-3. **Launch Jupyter Notebook**
-```bash
-jupyter notebook jaundice_prediction.ipynb
-```
+3. **Open in Google Colab**
+   - Upload `jaundice_prediction.ipynb` to Google Colab
+   - Or open directly from Google Drive
 
 4. **Mount Google Drive** (if using Google Colab)
 ```python
