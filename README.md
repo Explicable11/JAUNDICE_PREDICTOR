@@ -150,3 +150,283 @@ This study employs the publicly available **Neo Natal Jaundice dataset** curated
 - Testing: 1,400 samples
 
 ---
+
+
+## 🔬 Proposed Methodology
+
+Our methodology follows a systematic pipeline integrating perceptual color enhancement, automated ROI extraction, dimensionality reduction, and lightweight classification.
+
+### 1️⃣ Preprocessing and ROI Extraction
+
+#### 🎨 Color Enhancement (CLAHE in LAB Space)
+- Convert RGB images to **LAB color space** for perceptual uniformity
+- Apply **CLAHE (Contrast Limited Adaptive Histogram Equalization)** to L-channel
+- Corrects illumination inconsistencies and reveals subtle yellowing
+- Mitigates device-specific lighting artifacts while preserving physiological color cues
+
+#### 🟡 Yellow Region Segmentation (HSV-based)
+- Transform CLAHE-enhanced image to **HSV color space**
+- Apply calibrated HSV thresholds to isolate yellow-tinted skin regions  
+- Use morphological operations (erosion and dilation) to enhance segmented regions
+- Extract **150×150-pixel ROI** centered on largest contiguous yellow patch
+- Focus on medically relevant zones indicative of bilirubin-induced discoloration
+
+### 2️⃣ Color Space Transformation
+
+After preprocessing, ROI images are converted into multiple color spaces:
+
+- **RGB**: Standard color space baseline
+- **HSV**: Separates hue and saturation from brightness
+- **YCbCr**: Isolates luminance from chrominance  
+- **LAB**: Perceptually uniform, captures blue-yellow axis changes (🌟 BEST for jaundice)
+
+### 3️⃣ Feature Extraction and Dimensionality Reduction
+
+#### Raw Pixel Utilization
+- Use raw pixel intensities from 224×224 skin ROI as input
+- Preserves original spatial and color information
+- Avoids bias from handcrafted statistical descriptors
+- Results in **150,528-dimensional vectors**
+
+#### Standardization
+- Apply **Zero-mean, unit-variance scaling** via StandardScaler
+- Ensures all features contribute equally during PCA and classification
+
+#### Incremental PCA (IPCA)  
+- Scalable alternative to traditional PCA that processes dataset in mini-batches
+- Avoids RAM overloading with large datasets
+- Reduce dimensionality from **150,528 → 100 principal components**
+- Captures most discriminative variance while filtering noise
+
+### 4️⃣ Classification (Distance-Weighted KNN)
+
+**K-Nearest Neighbors (KNN)** configuration:
+- **k = 5** nearest neighbors  
+- **Distance-weighted voting**: Closer neighbors have greater influence
+- **Euclidean distance** metric
+
+**Prediction Formula**:
+```
+ŷ(x) = arg max Σ wi × 𝟙(yi = c)
+         c∈C  i∈Nk(x)
+
+where: wi = 1 / (d(x, xi)^2 + ε)
+```
+
+### 5️⃣ Performance Evaluation Metrics
+
+- **Accuracy** = (TP + TN) / (TP + TN + FP + FN)
+- **Precision** = TP / (TP + FP)
+- **Recall** = TP / (TP + FN)
+- **F1-Score** = 2 × (Precision × Recall) / (Precision + Recall)
+
+Stratified 80/20 train-test split preserves class distribution.
+
+---
+
+## 🏆 Experimental Results
+
+### 🎯 Classification Performance by Color Space
+
+Table below presents accuracy results for each classifier-color space combination:
+
+| Color Space | KNN | Random Forest | XGBoost | SVM |
+|-------------|------|---------------|---------|------|
+| RGB | **94.14%** | 91.93% | 92.29% | 84.36% |
+| HSV | **94.43%** | 92.29% | 91.00% | 81.93% |
+| YCbCr | **95.14%** | 92.43% | 91.36% | 82.14% |
+| **LAB** | **🌟 95.36%** | 92.93% | 91.29% | 83.57% |
+
+**Key Observation**: LAB + KNN achieves the highest accuracy (95.36%), confirming that perceptually uniform color spaces better capture subtle yellowish skin tone shifts correlated with elevated bilirubin levels.
+
+### 📊 Detailed Performance Metrics (Best Results by Color Space)
+
+| Color Space | Best Model | K Value | Accuracy | Precision | Recall | F1-Score |
+|-------------|------------|---------|----------|-----------|--------|----------|
+| 🥇 **LAB** | KNN | k=3 | **95.36%** | **96.49%** | **94.14%** | **95.30%** |
+| 🥈 HSV | KNN | k=3 | 94.43% | 95.33% | 91.00% | 94.37% |
+| 🥉 YCbCr | KNN | k=3 | 95.14% | 95.80% | 94.43% | 95.11% |
+| RGB | KNN | k=3 | 94.14% | 95.98% | 92.14% | 94.02% |
+
+### 🤖 Model Comparison (LAB Color Space)
+
+| Model | Accuracy | Training Time | Strengths |
+|-------|----------|---------------|----------|
+| **KNN (k=3)** | **95.36%** ⭐ | Fast | Simple, interpretable |
+| Random Forest | 92.93% | Medium | Robust to overfitting |
+| XGBoost | 91.29% | Medium | Good generalization |
+| SVM | 83.57% | Slow | Works with high dimensions |
+| ResNet50 | 81.21% | Slow | Deep feature learning |
+
+**Analysis**: KNN outperforms tree-based ensembles and deep learning models, demonstrating that local neighborhood-based learning is well-suited for biomedical image tasks where class boundaries are subtle.
+
+### 🎯 Confusion Matrix (LAB + KNN)
+
+**Best Model Performance**:
+```
+              Predicted
+            ≤10 mg/dL  >10 mg/dL
+Actual ≤10   676        24
+       >10    41        659
+
+True Positives:  676  |  False Positives:  24
+False Negatives: 41   |  True Negatives:  659
+
+Accuracy:  95.36%
+Precision: 96.49%
+Recall:    94.14%
+F1-Score:  95.30%
+```
+
+**Clinical Significance**:
+- ✅ **Low False Negatives (41)**: Critical for neonatal safety - minimizes missed jaundice cases
+- ✅ **Low False Positives (24)**: Reduces unnecessary clinical interventions  
+- ✅ **High True Positives (676)**: Excellent detection of elevated bilirubin cases
+- ✅ **High Recall (94.14%)**: Prioritizes catching jaundiced infants
+
+### 📈 Multi-K Robustness Test
+
+Tested KNN stability across different K values:
+
+| Color Space | K=4 | K=5 | K=6 |
+|-------------|-----|-----|-----|
+| RGB | 94.00% | 94.14% | 93.43% |
+| HSV | 94.36% | 94.43% | 93.14% |
+| YCbCr | 95.50% | 95.14% | 95.43% |
+| **LAB** | **95.10%** | **95.36%** | **95.00%** |
+
+**Conclusion**: LAB consistently performs above 95% across different K values, demonstrating robustness to hyperparameter changes without extensive tuning.
+
+---
+
+## 🛠️ Installation & Usage
+
+### Prerequisites
+```bash
+Python 3.8+
+Jupyter Notebook
+GPU (optional, for deep learning models)
+```
+
+### Setup
+
+1. **Clone the repository**
+```bash
+git clone https://github.com/Explicable11/JAUNDICE_PREDICTOR.git
+cd JAUNDICE_PREDICTOR
+```
+
+2. **Install dependencies**
+```bash
+pip install -r requirements.txt
+```
+
+3. **Launch Jupyter Notebook**
+```bash
+jupyter notebook jaundice_prediction.ipynb
+```
+
+4. **Mount Google Drive** (if using Google Colab)
+```python
+from google.colab import drive
+drive.mount('/content/drive')
+```
+
+### Quick Start Example
+
+```python
+import cv2
+import numpy as np
+from sklearn.neighbors import KNeighborsClassifier
+
+# Load and preprocess image
+image = cv2.imread('path/to/neonate_image.jpg')
+image_lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+image_resized = cv2.resize(image_lab, (224, 224))
+
+# Flatten and predict
+features = image_resized.flatten().reshape(1, -1)
+prediction = knn_model.predict(features)
+
+result = "High Jaundice (>10 mg/dL)" if prediction == 1 else "Low/Normal (≤10 mg/dL)"
+print(f"Prediction: {result}")
+```
+
+---
+
+## 📝 Key Findings & Conclusion
+
+### ✅ What Worked Best
+
+1. **LAB Color Space**: Achieved highest accuracy (95.36%) due to perceptual uniformity
+2. **K-Nearest Neighbors**: Simple yet effective, outperformed complex deep learning models
+3. **Skin ROI Extraction**: Improved focus on relevant features
+4. **Data Augmentation**: Better generalization with balanced 7,000 samples
+5. **Incremental PCA**: Efficient dimensionality reduction to 100 components
+
+### 📊 Clinical Impact
+
+- **95.36% Accuracy**: Reliable enough for clinical screening
+- **High Recall (94.14%)**: Minimizes false negatives - critical for infant safety
+- **Fast Inference**: Suitable for real-time mobile screening
+- **Interpretable**: No black-box CNNs, clear decision process
+- **Low-Resource Friendly**: Can run on mobile devices
+
+### 🎯 Conclusion
+
+This study successfully demonstrates a **lightweight, interpretable machine learning framework** for non-invasive neonatal jaundice detection. By leveraging **color space-aware preprocessing** (LAB+CLAHE), **HSV-based segmentation**, **incremental PCA**, and **distance-weighted KNN**, our pipeline achieves **95.36% accuracy** - outperforming previous studies with smaller datasets or complex deep networks.
+
+The proposed method offers a **practical, scalable solution for mobile health applications** and **resource-constrained clinical settings**, making early jaundice screening accessible in underserved regions.
+
+---
+
+## 📚 Project Structure
+
+```
+JAUNDICE_PREDICTOR/
+├── 📓 jaundice_prediction.ipynb    # Main notebook with experiments
+├── 📋 requirements.txt              # Python dependencies  
+├── 📖 README.md                     # Project documentation
+└── 📂 Data Structure (Google Drive)
+    ├── images/                      # Raw neonatal images
+    ├── sample_roi_output/           # Extracted skin ROIs
+    ├── chd_jaundice_published_2.csv # Labels & metadata
+    ├── X_aug_knn_lab.npy            # Processed features (LAB)
+    └── y_aug_knn.npy                # Binary labels
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Ideas for enhancement:
+- 🎨 Improve UI/UX for predictions
+- 📱 Create mobile app version
+- 🌐 Add web deployment  
+- 🔍 Implement multi-class classification
+- 📊 Add more visualization tools
+
+---
+
+## 🙏 Acknowledgments
+
+- **Dataset**: Neo Natal Jaundice Dataset from Xuzhou Central Hospital
+- **Inspiration**: Improving neonatal healthcare through AI
+- **Tools**: TensorFlow, scikit-learn, OpenCV, PyTorch, Jupyter
+- **Research Paper**: "Enhancing Neonatal Jaundice Detection: A Color Space-Aware PCA-KNN Approach"
+
+---
+
+## 📧 Contact
+
+**Authors**: Aryan Singh, Manish Pratap Singh, Dev Ayush, Rohit Kumar Tiwari, Sushil Kumar Saroj  
+**Corresponding Authors**: rohitkushinagar@gmail.com  
+**Repository**: [JAUNDICE_PREDICTOR](https://github.com/Explicable11/JAUNDICE_PREDICTOR)
+
+For questions or collaborations, please open an issue!
+
+---
+
+### ⭐ Star this repo if you found it helpful!
+
+**Made with ❤️ and 🤖 for better neonatal healthcare**
