@@ -130,6 +130,24 @@ This study employs the publicly available **Neo Natal Jaundice dataset** curated
 - 📍 Visible skin regions from head, face, and chest
 - 📏 Resolution: typically **567×567 pixels**
 - 🎯 Ground truth: Total Serum Bilirubin (TSB) levels validated by pediatric experts
+- 
+### 📦 Dataset Access
+
+> **🌟 Ready to dive into the data?** Access our complete preprocessed dataset, augmented images, and trained models on Google Drive!
+
+<div align="center">
+  
+[![Google Drive](https://img.shields.io/badge/Google%20Drive-Dataset%20%26%20Models-4285F4?style=for-the-badge&logo=googledrive&logoColor=white)](https://drive.google.com/drive/folders/14XCpzA4LfxtbZnz6gyjw7U7W6jvil9_-?usp=sharing)
+
+**📊 What's Inside:**
+- 🖼️ **2,235 Raw Clinical Images** - Original neonatal skin images
+- 🎨 **7,000 Augmented Samples** - Balanced training dataset
+- 🔬 **Preprocessed Features** - LAB color space transformations
+- 🤖 **Pre-trained Models** - KNN, Random Forest, XGBoost weights
+- 📈 **Evaluation Results** - Confusion matrices and metrics
+- 📋 **Metadata CSV** - TSB labels and patient information
+
+</div>
 
 ### 🛡️ Data Preprocessing & Augmentation
 
